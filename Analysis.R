@@ -126,6 +126,23 @@ alt<-aggregate(alt["altitude"], by=alt["date"], sum)
 
 dis<-aggregate(dis["distance"], by=dis["date"], sum)
 
+#Separate bpm and confidence columns
+hrt<-rbind(hrt1,hrt2)
+hrt<-hrt%>%
+  separate(heartrate,
+           into=c("bpm", "confidence"),
+           sep=",")
+hrt$bpm<-parse_number(hrt$bpm)
+hrt$confidence<-parse_number(hrt$confidence)
+
+#keep only high confidence recording (2 or 3)
+hrt<-hrt%>%
+  filter(confidence==2| confidence==3)
+table(hrt$confidence)
+
+  
+
+
 
 
 
