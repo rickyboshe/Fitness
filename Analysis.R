@@ -6,20 +6,134 @@ library(lubridate)
 
 #Load datasets
 alt<-read_csv("Dataset/Altitude.csv")
+dis<-read_csv("Dataset/Distance.csv")
+hrt1<-read_csv("Dataset/Heartrate1.csv")
+hrt2<-read_csv("Dataset/Heartrate2.csv")
+lam<-read_csv("Dataset/Light active minutes.csv")
+mam<-read_csv("Dataset/Moderate active minutes.csv")
+sam<-read_csv("Dataset/Sedentary minutes.csv")
+vam<-read_csv("Dataset/Very active minutes.csv")
+slp<-read_csv("Dataset/Sleep.csv")
+slp_sc<-read_csv("Dataset/sleep_score.csv")
 
+#Separate date variable
 alt<-alt%>%
   separate(Date,
            into=c("date", "time"),
            sep=" ")%>%
   select(-time)  #To seperate dates and time and remain with dates. 
 
+dis<-dis%>%
+  separate(Date,
+           into=c("date", "time"),
+           sep=" ")%>%
+  select(-time)
+
+hrt1<-hrt1%>%
+  separate(Date,
+           into=c("date", "time"),
+           sep=" ")%>%
+  select(-time)
+
+hrt2<-hrt2%>%
+  separate(Date,
+           into=c("date", "time"),
+           sep=" ")%>%
+  select(-time)
+
+lam<-lam%>%
+  separate(Date,
+           into=c("date", "time"),
+           sep=" ")%>%
+  select(-time)
+
+mam<-mam%>%
+  separate(Date,
+           into=c("date", "time"),
+           sep=" ")%>%
+  select(-time)
+
+sam<-sam%>%
+  separate(Date,
+           into=c("date", "time"),
+           sep=" ")%>%
+  select(-time)
+
+vam<-vam%>%
+  separate(Date,
+           into=c("date", "time"),
+           sep=" ")%>%
+  select(-time)
+
+slp_sc<-slp_sc%>%
+  separate(timestamp,
+           into=c("date", "time"),
+           sep=" ")%>%
+  select(-time)
+
+slp<-slp%>%
+  separate(startTime,
+           into=c("date", "time"),
+           sep=" ")%>%
+  select(-time, -Date)
+
+#Standardize dates and rename variables
 
 alt$date<-mdy(alt$date)
 alt<-alt%>%
-  rename(altitude=Altitude) #standardize dates and rename altitude
+  rename(altitude=Altitude) 
+
+dis$date<-mdy(dis$date)
+dis<-dis%>%
+  rename(distance=Distance) 
+
+
+hrt1$date<-mdy(hrt1$date)
+hrt1<-hrt1%>%
+  rename(heartrate=Heartrate) 
+
+
+hrt2$date<-mdy(hrt2$date)
+hrt2<-hrt2%>%
+  rename(heartrate=Heartrate) 
+
+
+lam$date<-mdy(lam$date)
+lam<-lam%>%
+  rename(light_act_mins=`Light active minutes`) 
+
+
+mam$date<-mdy(mam$date)
+mam<-mam%>%
+  rename(moderate_act_mins=`Moderate active minutes`) 
+
+sam$date<-mdy(sam$date)
+sam<-sam%>%
+  rename(sedentary_mins=`Sedentary minutes`)
+
+slp$date<-ymd(slp$date)
+
+slp_sc$date<-ymd(slp_sc$date)
+
+vam$date<-mdy(vam$date)
+vam<-vam%>%
+  rename(very_act_mins=`Very active minutes`) 
+
+
+###Aggregate the data by month
+
+alt<-aggregate(alt["altitude"], by=alt["date"], sum)
+
+dis<-aggregate(dis["distance"], by=dis["date"], sum)
+
+
+
+
+
+
 
 alt<-alt%>%
-  filter(date>=today()- months(9))%>% #Keep data for the last 8 months only
+  filter(date>=today()- months(9))%>% 
   mutate(month=month(date,label=TRUE),
          year=year(date)) #Create a month column with labels
 
