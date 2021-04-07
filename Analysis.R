@@ -3,6 +3,7 @@ library(tidyverse)
 library(ggplot2)
 library(plotly)
 library(lubridate)
+library(jsonlite)
 
 #Load datasets
 alt<-read_csv("Dataset/Altitude.csv")
@@ -140,13 +141,34 @@ hrt<-hrt%>%
   filter(confidence==2| confidence==3)
 table(hrt$confidence)
 
-  
+#create min, max and avg bpm columns for each date
 
+hrt<-hrt%>%
+  group_by(date)%>%
+  mutate(min_bpm=min(bpm),
+         max_bpm=max(bpm),
+         avg_bpm=mean(bpm))
+hrt$avg_bpm<-as.integer(hrt$avg_bpm)
 
+#remove bpm and confidence interval columns. Keep one observation per day
 
+hrt<-hrt%>%
+  select(-2:-3)%>%
+  unique.data.frame()
 
+#remove redundant columns
+slp<-slp%>%
+  select(-logId, -endTime, -minutesToFallAsleep)
 
+table(slp$efficiency)
 
+slp_sc<-slp_sc%>%
+  select(-1)
+
+slp$levels[3]
+
+#Separate levels column
+#Use normal means or with Json files
 
 
 alt<-alt%>%
