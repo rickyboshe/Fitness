@@ -1,1 +1,2 @@
-*.* linguist-language=R
+*.md linguist-detectable=true
+*R linguist-detectable=true
