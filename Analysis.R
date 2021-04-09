@@ -70,7 +70,7 @@ slp_sc<-slp_sc%>%
   separate(timestamp,
            into=c("date", "time"),
            sep=" ")%>%
-  select(-time)
+  select(-time, -sleep_log_entry_id, -deep_sleep_in_minutes)
 
 #Standardize dates and rename variables
 
@@ -112,12 +112,42 @@ vam$date<-mdy(vam$date)
 vam<-vam%>%
   rename(very_act_mins=`Very active minutes`) 
 
+#Import Sleep files Separate levels column
+path <- "./Dataset/"
+files <- dir(path, pattern = "*.json")
+
+slp <- files %>%
+  map_df(~fromJSON(file.path(path, .), flatten = TRUE))
+
+#Remove redundant columns
+slp$dateOfSleep<-ymd(slp$dateOfSleep)
+
+slp<-slp%>%
+  select(-1, -3:-6, -13:-16,-17, -19, -20, -22, -23, 
+         -25, -26, -28, -29, -31, -33)%>%
+  rename(date=dateOfSleep)%>%
+  as_tibble()
+
+min(slp$minutesAsleep)
 
 ###Aggregate the data by month
 
 alt<-aggregate(alt["altitude"], by=alt["date"], sum)
 
 dis<-aggregate(dis["distance"], by=dis["date"], sum)
+
+
+#Dealing with missing values to allow aggregation
+colSums(is.na(slp))
+
+slp<-slp%>%
+  select(-type, -efficiency) #Not important
+
+slp<-aggregate(. ~date, data = slp, sum, na.rm=TRUE, na.action=na.pass)
+
+##Missing values are converted to zero, which is fine for those variables
+
+max(slp$efficiency)
 
 #Separate bpm and confidence columns
 hrt<-rbind(hrt1,hrt2)
@@ -148,25 +178,39 @@ hrt<-hrt%>%
   select(-2:-3)%>%
   unique.data.frame()
 
-#remove redundant columns
+#Aggregate sleep score by date
 slp_sc<-slp_sc%>%
-  select(-1)
+  group_by(date)%>%
+  summarize(across(everything(), mean))
 
-#Import Sleep files Separate levels column
-path <- "./Dataset/"
-files <- dir(path, pattern = "*.json")
+sum(duplicated(slp_sc$date))
 
-slp <- files %>%
-  map_df(~fromJSON(file.path(path, .), flatten = TRUE))
 
-#Remove redundant columns
-slp$dateOfSleep<-ymd(slp$dateOfSleep)
+#Keep data for the last 9 months only
 
-slp<-slp%>%
-  select(-1, -3:-6, -13:-16,-17, -19, -20, -22, -23, 
-         -25, -26, -28, -29, -31, -33)
+con_date<-function(df){
+  df<-df%>%
+    filter(date>=today()- months(9))
+  return(df)
+}
+alt<-con_date(alt)
+dis<-con_date(dis)
+hrt<-con_date(hrt)
+lam<-con_date(lam)
+mam<-con_date(mam)
+sam<-con_date(sam)
+slp<-con_date(slp)
+slp_sc<-con_date(slp_sc)
+vam<-con_date(vam)
 
-min(slp$minutesAsleep)
+
+#Merge the files. left join to hrt dataset
+merge<-join_all(list(hrt,alt,dis,lam,mam,sam,
+                     vam,slp,slp_sc), by="date", type = "left")
+
+
+sum(is.na(merge))
+
 
 ##Convert distance units from centimeters to meters
 
