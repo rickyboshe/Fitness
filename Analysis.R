@@ -72,12 +72,6 @@ slp_sc<-slp_sc%>%
            sep=" ")%>%
   select(-time)
 
-slp<-slp%>%
-  separate(startTime,
-           into=c("date", "time"),
-           sep=" ")%>%
-  select(-time, -Date)
-
 #Standardize dates and rename variables
 
 alt$date<-mdy(alt$date)
@@ -111,8 +105,6 @@ mam<-mam%>%
 sam$date<-mdy(sam$date)
 sam<-sam%>%
   rename(sedentary_mins=`Sedentary minutes`)
-
-slp$date<-ymd(slp$date)
 
 slp_sc$date<-ymd(slp_sc$date)
 
@@ -157,19 +149,28 @@ hrt<-hrt%>%
   unique.data.frame()
 
 #remove redundant columns
-slp<-slp%>%
-  select(-logId, -endTime, -minutesToFallAsleep)
-
-table(slp$efficiency)
-
 slp_sc<-slp_sc%>%
   select(-1)
 
-slp$levels[3]
+#Import Sleep files Separate levels column
+path <- "./Dataset/"
+files <- dir(path, pattern = "*.json")
 
-#Separate levels column
-#Use normal means or with Json files
+slp <- files %>%
+  map_df(~fromJSON(file.path(path, .), flatten = TRUE))
 
+#Remove redundant columns
+slp$dateOfSleep<-ymd(slp$dateOfSleep)
+
+slp<-slp%>%
+  select(-1, -3:-6, -13:-16,-17, -19, -20, -22, -23, 
+         -25, -26, -28, -29, -31, -33)
+
+min(slp$minutesAsleep)
+
+##Convert distance units from centimeters to meters
+
+###
 
 alt<-alt%>%
   filter(date>=today()- months(9))%>% 
