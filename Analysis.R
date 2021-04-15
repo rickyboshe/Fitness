@@ -4,6 +4,9 @@ library(ggplot2)
 library(plotly)
 library(lubridate)
 library(jsonlite)
+install.packages("remotes")
+remotes::install_github("hrbrmstr/streamgraph")
+library(streamgraph)
 
 #Load datasets
 alt<-read_csv("Dataset/Altitude.csv")
@@ -213,8 +216,45 @@ sum(is.na(merge))
 
 
 ##Convert distance units from centimeters to meters
+merge$distance<-merge$distance/100
 
-###
+##Pivot longer by bpm
+#Streamgraph
+merge_longer<-merge%>%
+  pivot_longer(cols = c(avg_bpm, min_bpm, max_bpm),
+               names_to="bpm",
+               values_to="value")
+merge_longer$bpm<-factor(merge_longer$bpm, levels = c("min_bpm", "avg_bpm", "max_bpm"))
+
+fig1 <- streamgraph(merge_longer, key="bpm", value="value", date="date", 
+                    offset="zero", interpolate="linear", height="300px", width="1000px")%>%
+  sg_legend(show=TRUE, label="heartrates: ")%>%
+  sg_fill_brewer("Pastel1")
+fig1
+
+#Line chart
+
+fig2<-merge_longer%>%
+  ggplot(aes(x=date, y=value, color=bpm))+
+  geom_line()+
+  geom_hline(yintercept = c(95, 162), col = "red", lty = 2, alpha = 0.7)
+
+fig2
+
+fig3<-merge_longer%>%
+  ggplot( aes(x = date, y = value, color=bpm)) +
+  geom_line() +
+  geom_ribbon(aes(ymin=95,ymax=162), fill="green", color="green", alpha=.15)+
+  geom_hline(yintercept = c(95, 162), col = "red", lty = 2, alpha = 0.7) + # move this under geom_ribbon for a nicer result
+  theme_minimal()
+fig3
+
+
+fig4<-merge_longer%>%
+  ggplot(aes(x=date, y=value, color=bpm))+
+  geom_line()+
+  geom_ribbon(aes(ymax=162, ymin=95), fill="pink", alpha=.2)
+fig4
 
 alt<-alt%>%
   filter(date>=today()- months(9))%>% 
