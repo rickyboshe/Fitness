@@ -1,13 +1,17 @@
 ---
-title: 'Lockdown Fitness: An FitBit Insight'
+title: ''
 author: "Fredrick Boshe"
 date: "20/04/2021"
 output: 
   github_document: default
   rmarkdown::github_document: default
 ---
+<center>
+# Lockdown Fitness`r emo::ji("muscle")`: A FitBit Story `r emo::ji("watch")`
+</center>
 
-# An analysis of how the lockdown in Germany may have affected Fitness levels.
+### An analysis of how the lockdown in Germany may have affected Fitness levels
+
 
 Being in Germany the past 15 months means a state of endless lockdowns to curb the spread of the virus. While these lockdowns have had some positive results in keeping the waves of spread low in Germany, they have undoubtedly taken physical and mental toll on people. The sense of time, purpose and social behaviors have been negatively impacted. While it would be hard to actively track of how one's body reacts to everything, technology has given us tools that can do this for us. 
 
@@ -22,7 +26,7 @@ Questions looking to be answered are:
 I utilize my FitBit data that i [exported](https://help.fitbit.com/articles/en_US/Help_article/1133.htm) to try and answer these questions and provide context to key observations. The data comes in JSON format, which can be tricky for some people to parse through. You can uses this [Github page](https://iccir919.github.io/fitbit-json-to-csv/) that helps convert your JSON files to CSV.
 
 
-```{r setup, include=TRUE, results='hide', message=FALSE, warning=FALSE}
+```{r setup, include=FALSE, results='hide', message=FALSE, warning=FALSE}
 
 #Loading packages
 library(tidyverse)
@@ -44,7 +48,7 @@ library(zoo)
 
 ### Data: Importing and Cleaning 
 
-```{r data, include=TRUE, results='hide'}
+```{r data, include=TRUE, results='hide', message=FALSE, warning=FALSE}
 #Load datasets
 ## Method1: as CSV
 alt<-read_csv("Dataset/Altitude.csv")
@@ -84,7 +88,7 @@ alt<-alt%>%
 The "Date" column is designated as a character in all dataframes. It needs to be converted into in a "Date" data type. Since time is not of importance for this analysis, i decided to separate it, discard it and then convert the dates into correct format. 
 Remember to remove columns you feel are not important to your analysis or duplicated across dataframes e.g. sleep_log_entry_id. Filter out low confidence recordings for heartbeat (FitBit defines 0 1nd 1 as low confidence recordings, times when FitBit did not record any values).
 
-```{r clean, echo=FALSE}
+```{r clean, include=FALSE, results='hide'}
 
 #Separate date variable
 dis<-dis%>%
@@ -191,7 +195,7 @@ slp<-aggregate(. ~date, data = slp, sum, na.rm=TRUE, na.action=na.pass)
 
 ```
 
-```{r clean2, include=TRUE}
+```{r clean2, include=TRUE, results='hide'}
 ###Aggregate the data by month (example)
 alt<-aggregate(alt["altitude"], by=alt["date"], sum)
 dis<-aggregate(dis["distance"], by=dis["date"], sum)
@@ -296,15 +300,152 @@ plot1<-merge_dis%>%
   scale_fill_distiller(palette = "RdPu", direction=+1)+
   labs(x = "Day", 
        y = "Month",
-       title = "Heatmap: Distance Covered by Date")+
+       title = "Heatmap: Distance Covered by Date",
+       fill="Distance (m)")+
   theme(plot.title = element_text(hjust = 0.5, size = 14, face="bold",
-                                  margin = margin(t = 20, r = 0, b = 0, l = 0)),
-        axis.title.y = element_text(margin = margin(t = 0, r = 15, 
+                                  margin = margin(t = 0, r = 0, b = 10, l = 0)),
+        axis.title.y = element_text(margin = margin(t = 0, r = 10, 
                                                     b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 0, r = 0, 
-                                                    b = 15, l = 0)))
+                                                    b = 10, l = 0)))
 
 
 plot1
 
 ```
+
+First thing to notice is how active i was during November and December as compared to the other months. Also some of the months have different lengths (no. of days) so the heatmap is not a uniform square. A heatmap (**below**) plotting my activating spanning each weekday shows my most active days were Saturdays back in November. Probably as it was the day of the week i used to go groceries shopping, on foot, which is a good 1.2 kilometers from where i used to live.
+
+I since then changed my pattern to go groceries shopping several days a week to spread my activity across the week instead of just a single day of the week. 
+
+
+```{r distance2, include=TRUE, out.height='100%', out.width='100%', warning=FALSE}
+#create month and day columns
+merge_dis<-merge%>%
+  mutate(weekday=wday(date, label=TRUE),
+         month=month(date),
+         year=year(date))
+
+#Create a column with month and year
+merge_dis<-merge_dis%>%
+  mutate(period=as.yearmon(paste(year, month), "%Y %m"))
+merge_dis$period<-as.Date(merge_dis$period)#To allow mapping easier
+
+
+#merge_dis_longer<-merge_dis%>%
+  #pivot_longer(cols = c(day, month),
+               #names_to="period",
+               #values_to="value")
+
+plot2<-merge_dis%>%
+  drop_na(distance)%>%
+  filter(month!=9)%>%
+  ggplot(aes(x=weekday, y=period, fill=distance))+
+  geom_tile(colour="white",size=0.25, na.rm = TRUE)+
+  theme_minimal()+
+  scale_y_date(date_breaks = 'months', date_labels = '%b-%Y', expand = c(0,0))+
+  scale_fill_distiller(palette = "RdPu", direction=+1)+
+  labs(x = "Day", 
+       y = "Month",
+       title = "Heatmap: Distance Covered by Day",
+       fill="Distance (m)")+
+  theme(plot.title = element_text(hjust = 0.5, size = 14, face="bold",
+                                  margin = margin(t = 0, r = 0, b = 10, l = 0)),
+        axis.title.y = element_text(margin = margin(t = 0, r = 10, 
+                                                    b = 0, l = 0)),
+        axis.title.x = element_text(margin = margin(t = 0, r = 0, 
+                                                    b = 10, l = 0)))
+
+
+plot2
+
+```
+In February, my Thursdays became ever so active again. explanation for this is simple, Disney+ Friday shows i.e. WandaVision. I am a big marvel nerd, so i always go out on Thursdays to buy all the junk food and weekend snacks `r emo::ji("smile")`.
+
+### Altitude
+
+```{r Altitude, include=TRUE, out.height='100%', out.width='100%', warning=FALSE}
+#create month and day columns
+merge_alt<-merge%>%
+  mutate(day=day(date),
+         month=month(date, label = TRUE),
+         year=year(date))
+
+#Create a column with month and year
+merge_alt<-merge_alt%>%
+  mutate(period=as.yearmon(paste(year, month), "%Y %m"))
+merge_alt$period<-as.Date(merge_alt$period)#To allow mapping easier
+
+
+#merge_dis_longer<-merge_dis%>%
+  #pivot_longer(cols = c(day, month),
+               #names_to="period",
+               #values_to="value")
+
+plot3<-merge_alt%>%
+  drop_na(altitude)%>%
+  ggplot(aes(x=as.factor(month), y=altitude, fill=month))+
+  geom_boxplot(na.rm = TRUE)+
+  theme_minimal()+
+  scale_x_discrete(name ="Month", 
+                    limits=c("Sep","Oct","Nov",
+                             "Dec","Jan","Feb"))+
+  labs(x = "Month", 
+       y = "Altitude (m)",
+       title = "Monthly Altitude",
+       fill="Distance (m)")+
+  scale_fill_brewer(palette="Set2")+
+  theme(plot.title = element_text(hjust = 0.5, size = 14, face="bold",
+                                  margin = margin(t = 0, r = 0, b = 10, l = 0)),
+        axis.title.y = element_text(margin = margin(t = 0, r = 10, 
+                                                    b = 0, l = 0)),
+        axis.title.x = element_text(margin = margin(t = 0, r = 0, 
+                                                    b = 10, l = 0)),
+        legend.position="none")
+
+
+plot3
+```
+Similar to my walking distance heatmaps, it seems i had the biggest range of gained altitude in November and December.Interestingly, February had the smallest range of altitude, mostly between 50 metres and 100 metres.
+
+### Daily activity
+```{r Activity, include=TRUE, out.height='100%', out.width='100%', warning=FALSE}
+#create month and day columns
+merge_alt<-merge%>%
+  mutate(day=day(date),
+         month=month(date, label = TRUE),
+         year=year(date))
+
+#Create a column with month and year
+merge_alt<-merge_alt%>%
+  mutate(period=as.yearmon(paste(year, month), "%Y %m"))
+merge_alt$period<-as.Date(merge_alt$period)#To allow mapping easier
+
+merge_alt<-merge_alt%>%
+  drop_na(light_act_mins)%>%
+  drop_na(very_act_mins)%>%
+  drop_na(sedentary_mins)%>%
+  drop_na(moderate_act_mins)
+
+
+#merge_dis_longer<-merge_dis%>%
+  #pivot_longer(cols = c(day, month),
+               #names_to="period",
+               #values_to="value")
+
+merge_alt_longer<-merge_alt%>%
+  pivot_longer(cols = c(7:10),
+               names_to="activity",
+               values_to="value")
+merge_alt_longer$activity<-factor(merge_alt_longer$activity, 
+                                  levels = c("sedentary_mins", "light_act_mins", 
+                                             "moderate_act_mins", "very_act_mins"))
+
+plot4 <- streamgraph(merge_alt_longer, key="activity", value="value", date="date", 
+                    offset="zero", height="590px", width="1000px")%>%
+  sg_legend(show=TRUE, label="Activity: ")%>%
+  sg_fill_brewer("Pastel1")
+plot4
+
+```
+Well my mom won't be happy seeing as how much i turned into a full couch potato during lockdown. My sedentary minutes far far overshadow my active minutes. But then again, in a lockdown, who has been active?

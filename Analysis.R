@@ -258,7 +258,20 @@ alt<-alt%>%
   mutate(month=month(date,label=TRUE),
          year=year(date)) #Create a month column with labels
 
-
+###Additional code
 #alt_sum<-alt%>%
   group_by(month)%>%
   summarize(mean_altitude=mean(altitude))
+
+AP.fit <- lm(merge_alt$altitude ~ merge_alt$month)
+summary(AP.fit)
+AP.ci <- predict(AP.fit, interval="confidence")
+plot(AirPassengers)
+
+#Check if there is significant different for the months
+sum(is.na(merge_alt$altitude))
+merge_alt<-merge_alt%>%
+  drop_na(altitude)
+
+#Test for normality
+shapiro.test(merge_alt$altitude)

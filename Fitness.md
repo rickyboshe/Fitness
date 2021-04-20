@@ -1,9 +1,13 @@
-Lockdown Fitness: An FitBit Insight
-================
 Fredrick Boshe
 20/04/2021
 
-# An analysis of how the lockdown in Germany may have affected Fitness levels.
+<center>
+
+# Lockdown Fitness💪: A FitBit Story ⌚
+
+</center>
+
+### An analysis of how the lockdown in Germany may have affected Fitness levels
 
 Being in Germany the past 15 months means a state of endless lockdowns
 to curb the spread of the virus. While these lockdowns have had some
@@ -40,125 +44,21 @@ some people to parse through. You can uses this [Github
 page](https://iccir919.github.io/fitbit-json-to-csv/) that helps convert
 your JSON files to CSV.
 
-``` r
-#Loading packages
-library(tidyverse)
-library(ggplot2)
-library(dplyr)
-library(corrplot)
-library(plotly)
-library(ggcorrplot)
-library(scales)
-library(tufte)
-library(lubridate)
-library(streamgraph)
-library(jsonlite)
-library(emo)
-library(zoo)
-```
-
 ### Data: Importing and Cleaning
 
 ``` r
 #Load datasets
 ## Method1: as CSV
 alt<-read_csv("Dataset/Altitude.csv")
-```
-
-    ## Parsed with column specification:
-    ## cols(
-    ##   Date = col_character(),
-    ##   Altitude = col_double()
-    ## )
-
-``` r
 dis<-read_csv("Dataset/Distance.csv")
-```
-
-    ## Parsed with column specification:
-    ## cols(
-    ##   Date = col_character(),
-    ##   Distance = col_double()
-    ## )
-
-``` r
 hrt1<-read_csv("Dataset/Heartrate1.csv")
-```
-
-    ## Parsed with column specification:
-    ## cols(
-    ##   Date = col_character(),
-    ##   Heartrate = col_character()
-    ## )
-
-``` r
 hrt2<-read_csv("Dataset/Heartrate2.csv")
-```
-
-    ## Parsed with column specification:
-    ## cols(
-    ##   Date = col_character(),
-    ##   Heartrate = col_character()
-    ## )
-
-``` r
 lam<-read_csv("Dataset/Light active minutes.csv")
-```
-
-    ## Parsed with column specification:
-    ## cols(
-    ##   Date = col_character(),
-    ##   `Light active minutes` = col_double()
-    ## )
-
-``` r
 mam<-read_csv("Dataset/Moderate active minutes.csv")
-```
-
-    ## Parsed with column specification:
-    ## cols(
-    ##   Date = col_character(),
-    ##   `Moderate active minutes` = col_double()
-    ## )
-
-``` r
 sam<-read_csv("Dataset/Sedentary minutes.csv")
-```
-
-    ## Parsed with column specification:
-    ## cols(
-    ##   Date = col_character(),
-    ##   `Sedentary minutes` = col_double()
-    ## )
-
-``` r
 vam<-read_csv("Dataset/Very active minutes.csv")
-```
-
-    ## Parsed with column specification:
-    ## cols(
-    ##   Date = col_character(),
-    ##   `Very active minutes` = col_double()
-    ## )
-
-``` r
 slp_sc<-read_csv("Dataset/sleep_score.csv")
-```
 
-    ## Parsed with column specification:
-    ## cols(
-    ##   sleep_log_entry_id = col_double(),
-    ##   timestamp = col_datetime(format = ""),
-    ##   overall_score = col_double(),
-    ##   composition_score = col_double(),
-    ##   revitalization_score = col_double(),
-    ##   duration_score = col_double(),
-    ##   deep_sleep_in_minutes = col_double(),
-    ##   resting_heart_rate = col_double(),
-    ##   restlessness = col_double()
-    ## )
-
-``` r
 ## Method2: as JSON and turn it into a dataframe
 path <- "./Dataset/Sleep/"
 files <- dir(path, pattern = "*.json")
@@ -191,21 +91,6 @@ dataframes e.g. sleep\_log\_entry\_id. Filter out low confidence
 recordings for heartbeat (FitBit defines 0 1nd 1 as low confidence
 recordings, times when FitBit did not record any values).
 
-    ##                            date                   minutesAsleep 
-    ##                               0                               0 
-    ##                    minutesAwake              minutesAfterWakeup 
-    ##                               0                               0 
-    ##                       timeInBed                      efficiency 
-    ##                               0                               0 
-    ##                            type     levels.summary.deep.minutes 
-    ##                               0                              72 
-    ##     levels.summary.wake.minutes    levels.summary.light.minutes 
-    ##                              72                              72 
-    ##      levels.summary.rem.minutes levels.summary.restless.minutes 
-    ##                              72                             150 
-    ##    levels.summary.awake.minutes   levels.summary.asleep.minutes 
-    ##                             150                             150
-
 ``` r
 ###Aggregate the data by month (example)
 alt<-aggregate(alt["altitude"], by=alt["date"], sum)
@@ -224,13 +109,7 @@ hrt$confidence<-parse_number(hrt$confidence)
 hrt<-hrt%>%
   filter(confidence==2| confidence==3)
 table(hrt$confidence)
-```
 
-    ## 
-    ##      2      3 
-    ## 460516 645856
-
-``` r
 #create min, max and avg bpm columns for each date
 hrt<-hrt%>%
   group_by(date)%>%
@@ -249,11 +128,7 @@ slp_sc<-slp_sc%>%
   group_by(date)%>%
   summarize(across(everything(), mean))
 sum(duplicated(slp_sc$date))
-```
 
-    ## [1] 0
-
-``` r
 #Keep data for the last 9 months only
 con_date<-function(df){
   df<-df%>%
@@ -284,11 +159,7 @@ merge<-hrt%>%
 
 #Check for duplicated dates
 sum(duplicated(merge$date))
-```
 
-    ## [1] 0
-
-``` r
 ##Convert distance units from centimeters to meters
 merge$distance<-merge$distance/100
 ```
@@ -325,16 +196,171 @@ plot1<-merge_dis%>%
   scale_fill_distiller(palette = "RdPu", direction=+1)+
   labs(x = "Day", 
        y = "Month",
-       title = "Heatmap: Distance Covered by Date")+
+       title = "Heatmap: Distance Covered by Date",
+       fill="Distance (m)")+
   theme(plot.title = element_text(hjust = 0.5, size = 14, face="bold",
-                                  margin = margin(t = 20, r = 0, b = 0, l = 0)),
-        axis.title.y = element_text(margin = margin(t = 0, r = 15, 
+                                  margin = margin(t = 0, r = 0, b = 10, l = 0)),
+        axis.title.y = element_text(margin = margin(t = 0, r = 10, 
                                                     b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 0, r = 0, 
-                                                    b = 15, l = 0)))
+                                                    b = 10, l = 0)))
 
 
 plot1
 ```
 
 <img src="Fitness_files/figure-gfm/distance-1.png" width="100%" height="100%" />
+
+First thing to notice is how active i was during November and December
+as compared to the other months. Also some of the months have different
+lengths (no. of days) so the heatmap is not a uniform square. A heatmap
+(**below**) plotting my activating spanning each weekday shows my most
+active days were Saturdays back in November. Probably as it was the day
+of the week i used to go groceries shopping, on foot, which is a good
+1.2 kilometers from where i used to live.
+
+I since then changed my pattern to go groceries shopping several days a
+week to spread my activity across the week instead of just a single day
+of the week.
+
+``` r
+#create month and day columns
+merge_dis<-merge%>%
+  mutate(weekday=wday(date, label=TRUE),
+         month=month(date),
+         year=year(date))
+
+#Create a column with month and year
+merge_dis<-merge_dis%>%
+  mutate(period=as.yearmon(paste(year, month), "%Y %m"))
+merge_dis$period<-as.Date(merge_dis$period)#To allow mapping easier
+
+
+#merge_dis_longer<-merge_dis%>%
+  #pivot_longer(cols = c(day, month),
+               #names_to="period",
+               #values_to="value")
+
+plot2<-merge_dis%>%
+  drop_na(distance)%>%
+  filter(month!=9)%>%
+  ggplot(aes(x=weekday, y=period, fill=distance))+
+  geom_tile(colour="white",size=0.25, na.rm = TRUE)+
+  theme_minimal()+
+  scale_y_date(date_breaks = 'months', date_labels = '%b-%Y', expand = c(0,0))+
+  scale_fill_distiller(palette = "RdPu", direction=+1)+
+  labs(x = "Day", 
+       y = "Month",
+       title = "Heatmap: Distance Covered by Day",
+       fill="Distance (m)")+
+  theme(plot.title = element_text(hjust = 0.5, size = 14, face="bold",
+                                  margin = margin(t = 0, r = 0, b = 10, l = 0)),
+        axis.title.y = element_text(margin = margin(t = 0, r = 10, 
+                                                    b = 0, l = 0)),
+        axis.title.x = element_text(margin = margin(t = 0, r = 0, 
+                                                    b = 10, l = 0)))
+
+
+plot2
+```
+
+<img src="Fitness_files/figure-gfm/distance2-1.png" width="100%" height="100%" />
+In February, my Thursdays became ever so active again. explanation for
+this is simple, Disney+ Friday shows i.e. WandaVision. I am a big marvel
+nerd, so i always go out on Thursdays to buy all the junk food and
+weekend snacks 😄.
+
+### Altitude
+
+``` r
+#create month and day columns
+merge_alt<-merge%>%
+  mutate(day=day(date),
+         month=month(date, label = TRUE),
+         year=year(date))
+
+#Create a column with month and year
+merge_alt<-merge_alt%>%
+  mutate(period=as.yearmon(paste(year, month), "%Y %m"))
+merge_alt$period<-as.Date(merge_alt$period)#To allow mapping easier
+
+
+#merge_dis_longer<-merge_dis%>%
+  #pivot_longer(cols = c(day, month),
+               #names_to="period",
+               #values_to="value")
+
+plot3<-merge_alt%>%
+  drop_na(altitude)%>%
+  ggplot(aes(x=as.factor(month), y=altitude, fill=month))+
+  geom_boxplot(na.rm = TRUE)+
+  theme_minimal()+
+  scale_x_discrete(name ="Month", 
+                    limits=c("Sep","Oct","Nov",
+                             "Dec","Jan","Feb"))+
+  labs(x = "Month", 
+       y = "Altitude (m)",
+       title = "Monthly Altitude",
+       fill="Distance (m)")+
+  scale_fill_brewer(palette="Set2")+
+  theme(plot.title = element_text(hjust = 0.5, size = 14, face="bold",
+                                  margin = margin(t = 0, r = 0, b = 10, l = 0)),
+        axis.title.y = element_text(margin = margin(t = 0, r = 10, 
+                                                    b = 0, l = 0)),
+        axis.title.x = element_text(margin = margin(t = 0, r = 0, 
+                                                    b = 10, l = 0)),
+        legend.position="none")
+
+
+plot3
+```
+
+<img src="Fitness_files/figure-gfm/Altitude-1.png" width="100%" height="100%" />
+Similar to my walking distance heatmaps, it seems i had the biggest
+range of gained altitude in November and December.Interestingly,
+February had the smallest range of altitude, mostly between 50 metres
+and 100 metres.
+
+``` r
+#create month and day columns
+merge_alt<-merge%>%
+  mutate(day=day(date),
+         month=month(date, label = TRUE),
+         year=year(date))
+
+#Create a column with month and year
+merge_alt<-merge_alt%>%
+  mutate(period=as.yearmon(paste(year, month), "%Y %m"))
+merge_alt$period<-as.Date(merge_alt$period)#To allow mapping easier
+
+merge_alt<-merge_alt%>%
+  drop_na(light_act_mins)%>%
+  drop_na(very_act_mins)%>%
+  drop_na(sedentary_mins)%>%
+  drop_na(moderate_act_mins)
+
+
+#merge_dis_longer<-merge_dis%>%
+  #pivot_longer(cols = c(day, month),
+               #names_to="period",
+               #values_to="value")
+
+merge_alt_longer<-merge_alt%>%
+  pivot_longer(cols = c(7:10),
+               names_to="activity",
+               values_to="value")
+merge_alt_longer$activity<-factor(merge_alt_longer$activity, 
+                                  levels = c("sedentary_mins", "light_act_mins", 
+                                             "moderate_act_mins", "very_act_mins"))
+
+plot4 <- streamgraph(merge_alt_longer, key="activity", value="value", date="date", 
+                    offset="zero", height="590px", width="1000px")%>%
+  sg_legend(show=TRUE, label="Activity: ")%>%
+  sg_fill_brewer("Pastel1")
+plot4
+```
+
+<img src="Fitness_files/figure-gfm/Activity-1.png" width="100%" height="100%" />
+Well my mom won’t be happy seeing as how much i turned into a full couch
+potato during lockdown. My sedentary minutes far far overshadow my
+active minutes. But then again, in a lockdown, who has been active?
