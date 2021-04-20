@@ -4,8 +4,6 @@ library(ggplot2)
 library(plotly)
 library(lubridate)
 library(jsonlite)
-install.packages("remotes")
-remotes::install_github("hrbrmstr/streamgraph")
 library(streamgraph)
 
 #Load datasets
@@ -25,7 +23,7 @@ alt<-alt%>%
   separate(Date,
            into=c("date", "time"),
            sep=" ")%>%
-  select(-time)  #To seperate dates and time and remain with dates. 
+  select(-time)   
 
 dis<-dis%>%
   separate(Date,
@@ -76,7 +74,6 @@ slp_sc<-slp_sc%>%
   select(-time, -sleep_log_entry_id, -deep_sleep_in_minutes)
 
 #Standardize dates and rename variables
-
 alt$date<-mdy(alt$date)
 alt<-alt%>%
   rename(altitude=Altitude) 
