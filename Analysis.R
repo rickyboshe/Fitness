@@ -275,3 +275,15 @@ merge_alt<-merge_alt%>%
 
 #Test for normality
 shapiro.test(merge_alt$altitude)
+
+data <- data.frame(
+  individual=paste( "Mister ", seq(1,60), sep=""),
+  group=c( rep('A', 10), rep('B', 30), rep('C', 14), rep('D', 6)) ,
+  value1=sample( seq(10,100), 60, replace=T),
+  value2=sample( seq(10,100), 60, replace=T),
+  value3=sample( seq(10,100), 60, replace=T)
+)
+max(merge_slp$minutesAsleep)
+min(merge_slp$minutesAsleep)
+rlang::last_error()
+table(label_data$day)

@@ -42,6 +42,7 @@ library(streamgraph)
 library(jsonlite)
 library(emo)
 library(zoo)
+library(viridis)
 
 
 ```
@@ -449,3 +450,60 @@ plot4
 
 ```
 Well my mom won't be happy seeing as how much i turned into a full couch potato during lockdown. My sedentary minutes far far overshadow my active minutes. But then again, in a lockdown, who has been active?
+
+## Night Insights: Resting levels
+### Sleep Quantity
+```{r Quantity, include=TRUE, out.height='100%', out.width='100%', warning=FALSE}
+#create month and day columns
+merge_slp<-merge%>%
+  mutate(day=wday(date, label=TRUE),
+         month=month(date, label = TRUE),
+         year=year(date))%>%
+  select(11:13, 28:29)
+
+#Create a column with month and year
+#merge_slp<-merge_alt%>%
+ # mutate(period=as.yearmon(paste(year, month), "%Y %m"))
+#merge_alt$period<-as.Date(merge_alt$period)#To allow mapping easier
+
+merge_slp<-merge_slp%>%
+   drop_na(minutesAsleep)
+
+
+merge_slp_longer<-merge_slp%>%
+  pivot_longer(cols = c(2:4),
+               names_to="in_bed",
+               values_to="value")
+
+#set up the main structure of the plot
+plot5 <- ggplot(merge_slp_longer, aes(x = in_bed, y = value)) +
+    #ignore warning message “Using alpha for a discrete variable is not advised.”
+    geom_bar(stat = "identity", position = "dodge", aes(fill = in_bed)) +
+    #use polar coordinate
+    coord_polar(start = 0) +
+    ylim(-40,90) +
+    #add color arc to highlight ACL00 and a dummy black arc
+    geom_bar(stat = "identity", aes(x = in_bed, y = -2, fill = in_bed)) +
+    geom_bar(stat = "identity", aes(x = in_bed, y = -1), fill = "black") +
+  #use colorbrewer palette Dark2
+    scale_fill_brewer(palette = "Dark2") +
+    #facet to get one plot per Country
+    facet_wrap(~ month, nrow = 4) +
+    #final tuning
+    theme_minimal() +
+    theme(legend.position = "none",
+        strip.text = element_text(color = "white"),
+        axis.title = element_blank(),
+        axis.text = element_blank(),
+        panel.grid = element_blank(),
+        plot.background = element_rect(fill = "black"))
+plot5
+
+
+plot5<-ggplot(merge_slp_longer, aes(x = in_bed, y = value, fill=in_bed)) +
+  geom_hline(yintercept = seq(0, 100, by = 10), color ="grey", size = 1) +
+  geom_vline(xintercept = seq(.5, 16.5, by = 1), color ="grey", size = 1) +
+  coord_polar()+
+  facet_wrap(vars(month))
+plot5
+```
