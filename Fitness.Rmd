@@ -477,8 +477,25 @@ merge_slp_longer<-merge_slp%>%
 
 plot5 <- merge_slp_longer%>%
   ggplot(aes(x = day, y = value, fill=in_bed))+ 
-  geom_bar(stat = "identity", width = 0.8)+
-  scale_fill_brewer(palette="Dark2")
+  geom_bar( stat = "identity")+
+  scale_x_discrete(expand = c(0, 0)) + 
+  scale_y_continuous(expand = c(0, 0))+
+  scale_fill_manual(
+    name="In Bed",
+    values = c("#009E73", "#D55E00", "#999999"),
+    labels=c("After Wakeup", "Asleep", "Awake"))+
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face="bold", size = 12),
+        axis.ticks = element_blank(),
+        #axis.text = element_blank(),
+        #axis.title = element_blank(),
+        axis.line = element_blank())+
+  labs(title = "Time in Bed by Days",
+       y="Minutes",
+       x="Day")
 
 plot5
+
+
+
 ```
