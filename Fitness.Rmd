@@ -475,35 +475,10 @@ merge_slp_longer<-merge_slp%>%
                names_to="in_bed",
                values_to="value")
 
-#set up the main structure of the plot
-plot5 <- ggplot(merge_slp_longer, aes(x = in_bed, y = value)) +
-    #ignore warning message “Using alpha for a discrete variable is not advised.”
-    geom_bar(stat = "identity", position = "dodge", aes(fill = in_bed)) +
-    #use polar coordinate
-    coord_polar(start = 0) +
-    ylim(-40,90) +
-    #add color arc to highlight ACL00 and a dummy black arc
-    geom_bar(stat = "identity", aes(x = in_bed, y = -2, fill = in_bed)) +
-    geom_bar(stat = "identity", aes(x = in_bed, y = -1), fill = "black") +
-  #use colorbrewer palette Dark2
-    scale_fill_brewer(palette = "Dark2") +
-    #facet to get one plot per Country
-    facet_wrap(~ month, nrow = 4) +
-    #final tuning
-    theme_minimal() +
-    theme(legend.position = "none",
-        strip.text = element_text(color = "white"),
-        axis.title = element_blank(),
-        axis.text = element_blank(),
-        panel.grid = element_blank(),
-        plot.background = element_rect(fill = "black"))
-plot5
+plot5 <- merge_slp_longer%>%
+  ggplot(aes(x = day, y = value, fill=in_bed))+ 
+  geom_bar(stat = "identity", width = 0.8)+
+  scale_fill_brewer(palette="Dark2")
 
-
-plot5<-ggplot(merge_slp_longer, aes(x = in_bed, y = value, fill=in_bed)) +
-  geom_hline(yintercept = seq(0, 100, by = 10), color ="grey", size = 1) +
-  geom_vline(xintercept = seq(.5, 16.5, by = 1), color ="grey", size = 1) +
-  coord_polar()+
-  facet_wrap(vars(month))
 plot5
 ```
