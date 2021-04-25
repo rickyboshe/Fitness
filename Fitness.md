@@ -321,6 +321,8 @@ range of gained altitude in November and December.Interestingly,
 February had the smallest range of altitude, mostly between 50 metres
 and 100 metres.
 
+### Daily activity
+
 ``` r
 #create month and day columns
 merge_alt<-merge%>%
@@ -364,3 +366,126 @@ plot4
 Well my mom won’t be happy seeing as how much i turned into a full couch
 potato during lockdown. My sedentary minutes far far overshadow my
 active minutes. But then again, in a lockdown, who has been active?
+
+## Night Insights: Resting levels
+
+### Sleep Quantity
+
+It would seem i spend the most time in bed on Sundays and the least on
+Mondays. Well, at least now i know why i have been cranky on mMondays,
+my sleep pattern needs improvement for Mondays.
+
+``` r
+#create month and day columns
+merge_slp<-merge%>%
+  mutate(day=wday(date, label=TRUE),
+         month=month(date, label = TRUE),
+         year=year(date))%>%
+  select(11:13, 28:29)
+```
+
+    ## Adding missing grouping variables: `date`
+
+``` r
+merge_slp<-merge_slp%>%
+   drop_na(minutesAsleep)
+
+merge_slp_longer<-merge_slp%>%
+  pivot_longer(cols = c(2:4),
+               names_to="in_bed",
+               values_to="value")
+
+plot5 <- merge_slp_longer%>%
+  ggplot(aes(x = day, y = value, fill=in_bed))+ 
+  geom_bar( stat = "identity")+
+  scale_x_discrete(expand = c(0, 0)) + 
+  scale_y_continuous(expand = c(0, 0))+
+  scale_fill_manual(
+    name="In Bed",
+    values = c("#009E73", "#D55E00", "#999999"),
+    labels=c("After Wakeup", "Asleep", "Awake"))+
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face="bold", size = 12),
+        axis.ticks = element_blank(),
+        axis.line = element_blank())+
+  labs(title = "Time in Bed by Days",
+       y="Minutes",
+       x="Day")
+
+plot5
+```
+
+<img src="Fitness_files/figure-gfm/Quantity-1.png" width="100%" height="100%" />
+
+``` r
+#Average sleeping time per day
+merge_slp_avg<-merge_slp_longer%>%
+  group_by(day, in_bed)%>%
+  summarise(avg=mean(value, na.rm=TRUE))%>%
+  mutate(avg=avg/60)
+```
+
+    ## `summarise()` has grouped output by 'day'. You can override using the `.groups` argument.
+
+``` r
+plot6<-merge_slp_avg%>%
+  ggplot(aes(x=day, y=avg, color=in_bed, group=in_bed))+
+  geom_point()+geom_line()+
+  scale_color_manual(
+    name="In Bed",
+    values = c("#009E73", "#D55E00", "#000000"),
+    labels=c("After Wakeup", "Asleep", "Awake"))+
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face="bold", size = 12),
+        axis.ticks = element_blank(),
+        axis.line = element_blank())+
+  labs(title = "Average Time in Bed by Days",
+       y="Hours",
+       x="Day")
+plot6
+```
+
+<img src="Fitness_files/figure-gfm/Quantity-2.png" width="100%" height="100%" />
+Looking at the average hours of sleep i log, again, Sundays seem the
+only day i get the doctor’s recommendation of 8 hours of sleep. My body
+clock’s just 7 hours of sleep on average.
+
+## Heart rate: Healthy?
+
+### Beats per minute
+
+``` r
+#Pivot dataframe 
+merge_hrt_longer<-merge%>%
+  pivot_longer(cols = c(avg_bpm, min_bpm, max_bpm),
+               names_to="bpm",
+               values_to="value")
+merge_hrt_longer$bpm<-factor(merge_hrt_longer$bpm, levels = c("min_bpm", "avg_bpm", "max_bpm"))
+
+
+#Line chart
+
+plot8<-merge_hrt_longer%>%
+  ggplot( aes(x = date, y = value, color=bpm)) +
+  geom_line() +
+  geom_ribbon(aes(ymin=95,ymax=162), fill="green", color="green", alpha=.15)+
+  geom_hline(yintercept = c(95, 162), col = "red", lty = 2, alpha = 0.7)+ 
+  scale_color_manual(
+    name="heart rate",
+    values = c("#FF4500", "#006400", "#4169E1"),
+    labels=c("Minimum bpm", "Average bpm", "Maximum bpm"))+
+  theme_minimal()+
+   theme(plot.title = element_text(hjust = 0.5, face="bold", size = 12),
+        axis.ticks = element_blank(),
+        axis.line = element_blank())+
+  labs(title = "Heart rate by Month",
+       y="beats per minute",
+       x="month")
+plot8
+```
+
+<img src="Fitness_files/figure-gfm/bpm-1.png" width="100%" height="100%" />
+
+``` r
+#Per day
+```
