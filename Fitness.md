@@ -3,11 +3,11 @@ Fredrick Boshe
 
 <center>
 
-# Lockdown Fitness💪: A FitBit Story ⌚
+# Lockdown Fitness: A FitBit Story ⌚
 
 </center>
 
-### An analysis of how the lockdown in Germany may have affected Fitness levels
+### How the lockdown in Germany may have affected Fitness levels
 
 Being in Germany the past 15 months means a state of endless lockdowns
 to curb the spread of the virus. While these lockdowns have had some
@@ -209,7 +209,7 @@ plot1<-merge_dis%>%
 plot1
 ```
 
-<img src="Fitness_files/figure-gfm/distance-1.png" width="100%" height="100%" />
+<img src="Fitness_files/figure-gfm/distance-1.png" width="85%" height="85%" style="display: block; margin: auto;" />
 
 First thing to notice is how active i was during November and December
 as compared to the other months. Also some of the months have different
@@ -235,12 +235,7 @@ merge_dis<-merge_dis%>%
   mutate(period=as.yearmon(paste(year, month), "%Y %m"))
 merge_dis$period<-as.Date(merge_dis$period)#To allow mapping easier
 
-
-#merge_dis_longer<-merge_dis%>%
-  #pivot_longer(cols = c(day, month),
-               #names_to="period",
-               #values_to="value")
-
+#Plot heatmap
 plot2<-merge_dis%>%
   drop_na(distance)%>%
   filter(month!=9)%>%
@@ -264,7 +259,7 @@ plot2<-merge_dis%>%
 plot2
 ```
 
-<img src="Fitness_files/figure-gfm/distance2-1.png" width="100%" height="100%" />
+<img src="Fitness_files/figure-gfm/distance2-1.png" width="85%" height="85%" style="display: block; margin: auto;" />
 In February, my Thursdays became ever so active again. explanation for
 this is simple, Disney+ Friday shows i.e. WandaVision. I am a big marvel
 nerd, so i always go out on Thursdays to buy all the junk food and
@@ -315,7 +310,7 @@ plot3<-merge_alt%>%
 plot3
 ```
 
-<img src="Fitness_files/figure-gfm/Altitude-1.png" width="100%" height="100%" />
+<img src="Fitness_files/figure-gfm/Altitude-1.png" width="85%" height="85%" style="display: block; margin: auto;" />
 Similar to my walking distance heatmaps, it seems i had the biggest
 range of gained altitude in November and December.Interestingly,
 February had the smallest range of altitude, mostly between 50 metres
@@ -362,7 +357,7 @@ plot4 <- streamgraph(merge_alt_longer, key="activity", value="value", date="date
 plot4
 ```
 
-<img src="Fitness_files/figure-gfm/Activity-1.png" width="100%" height="100%" />
+<img src="Fitness_files/figure-gfm/Activity-1.png" width="85%" height="85%" style="display: block; margin: auto;" />
 Well my mom won’t be happy seeing as how much i turned into a full couch
 potato during lockdown. My sedentary minutes far far overshadow my
 active minutes. But then again, in a lockdown, who has been active?
@@ -415,7 +410,7 @@ plot5 <- merge_slp_longer%>%
 plot5
 ```
 
-<img src="Fitness_files/figure-gfm/Quantity-1.png" width="100%" height="100%" />
+<img src="Fitness_files/figure-gfm/Quantity-1.png" width="85%" height="85%" style="display: block; margin: auto;" />
 
 ``` r
 #Average sleeping time per day
@@ -445,7 +440,7 @@ plot6<-merge_slp_avg%>%
 plot6
 ```
 
-<img src="Fitness_files/figure-gfm/Quantity-2.png" width="100%" height="100%" />
+<img src="Fitness_files/figure-gfm/Quantity-2.png" width="85%" height="85%" style="display: block; margin: auto;" />
 Looking at the average hours of sleep i log, again, Sundays seem the
 only day i get the doctor’s recommendation of 8 hours of sleep. My body
 clock’s just 7 hours of sleep on average.
@@ -453,6 +448,16 @@ clock’s just 7 hours of sleep on average.
 ## Heart rate: Healthy?
 
 ### Beats per minute
+
+The most heart rate fluctuations occur in November and December, which
+are also the months that i had the most activity (distance covered) and
+range of altitude gained. More activity = more heart rate fluctuations.
+
+The majority of my beats per minute are within the the 50-85% target
+range for my age as quoted by the [American Heart
+Society](https://www.heart.org/en/healthy-living/fitness/fitness-basics/target-heart-rates).
+Minor spikes that breached the 100% point, which coincide with days i
+logged in the most distance (November and February).
 
 ``` r
 #Pivot dataframe 
@@ -464,12 +469,12 @@ merge_hrt_longer$bpm<-factor(merge_hrt_longer$bpm, levels = c("min_bpm", "avg_bp
 
 
 #Line chart
-
 plot8<-merge_hrt_longer%>%
   ggplot( aes(x = date, y = value, color=bpm)) +
   geom_line() +
   geom_ribbon(aes(ymin=95,ymax=162), fill="green", color="green", alpha=.15)+
-  geom_hline(yintercept = c(95, 162), col = "red", lty = 2, alpha = 0.7)+ 
+  geom_hline(yintercept = c(95, 162), col = "red", lty = 2, alpha = 0.7)+
+  geom_hline(yintercept = c(190), col = "red", lty = 2, alpha = 0.7)+
   scale_color_manual(
     name="heart rate",
     values = c("#FF4500", "#006400", "#4169E1"),
@@ -480,12 +485,69 @@ plot8<-merge_hrt_longer%>%
         axis.line = element_blank())+
   labs(title = "Heart rate by Month",
        y="beats per minute",
-       x="month")
+       x="month")+
+  annotate("text", as.Date(x="2021-03-10"), y=140, 
+           label= "Target HR Zone \n50-85%", size=4, face="bold")+
+  annotate("text", as.Date(x="2021-03-10"), y=200, 
+           label= "Danger HR Zone \n>100%", size=4, face="bold", color="red")
+  
 plot8
 ```
 
-<img src="Fitness_files/figure-gfm/bpm-1.png" width="100%" height="100%" />
+<img src="Fitness_files/figure-gfm/bpm-1.png" width="85%" height="85%" style="display: block; margin: auto;" />
 
 ``` r
 #Per day
+#create month and day columns
+merge_hrt<-merge%>%
+  mutate(weekday=wday(date, label=TRUE),
+         month=month(date),
+         year=year(date))
+
+#Create a column with month and year
+merge_hrt<-merge_hrt%>%
+  mutate(period=as.yearmon(paste(year, month), "%Y %m"))
+merge_hrt$period<-as.Date(merge_hrt$period)
+
+#Pivot dataframe 
+merge_hrt_longer<-merge_hrt%>%
+  pivot_longer(cols = c(avg_bpm, min_bpm, max_bpm),
+               names_to="bpm",
+               values_to="value")
+merge_hrt_longer$bpm<-factor(merge_hrt_longer$bpm, levels = c("min_bpm", "avg_bpm", "max_bpm"))
+
+merge_hrt_day<-merge_hrt_longer%>%
+  group_by(weekday,bpm)%>%
+  summarise(value=mean(value, na.rm=TRUE))
 ```
+
+    ## `summarise()` has grouped output by 'weekday'. You can override using the `.groups` argument.
+
+``` r
+#Line chart
+plot9<-merge_hrt_day%>%
+  ggplot(aes(x=weekday, y = value, color=bpm, group=bpm)) +
+  geom_line()+
+  geom_ribbon(aes(ymin=95,ymax=162), fill="green", color="green", alpha=.05)+
+  geom_hline(yintercept = c(95, 162), col = "red", lty = 2, alpha = 0.7)+
+  scale_color_manual(
+    name="heart rate",
+    values = c("#FF4500", "#006400", "#4169E1"),
+    labels=c("Minimum bpm", "Average bpm", "Maximum bpm"))+
+  theme_minimal()+
+   theme(plot.title = element_text(hjust = 0.5, face="bold", size = 12),
+        axis.ticks = element_blank(),
+        axis.line = element_blank())+
+   labs(title = "Heart rate by Month",
+       y="beats per minute",
+       x="month")+
+  annotate("text", x="Tue", y=140, 
+           label= "Target HR Zone \n50-85%", size=4.5, face="bold")
+plot9
+```
+
+<img src="Fitness_files/figure-gfm/bpm-2.png" width="85%" height="85%" style="display: block; margin: auto;" />
+As expected, on average, Sundays logs in the lowest average maximum bpm.
+I rarely do any activity other than catch up on anime and TV shows.
+Thursdays has the highest average maximum bpm. Maybe a culmination of
+weekdays stress?
