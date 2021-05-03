@@ -479,7 +479,7 @@ plot5 <- merge_slp_longer%>%
     values = c("#009E73", "#D55E00", "#999999"),
     labels=c("After Wakeup", "Asleep", "Awake"))+
   theme_minimal() +
-  theme(plot.title = element_text(hjust = 0.5, face="bold", size = 12),
+  theme(plot.title = element_text(hjust = 0.5, face="bold", size = 14),
         axis.ticks = element_blank(),
         axis.line = element_blank())+
   labs(title = "Time in Bed by Days",
@@ -492,7 +492,7 @@ plot5
 merge_slp_avg<-merge_slp_longer%>%
   group_by(day, in_bed)%>%
   summarise(avg=mean(value, na.rm=TRUE))%>%
-  mutate(avg=avg/60)
+  mutate(avg=avg/60) #convert minutes to hours
 
 plot6<-merge_slp_avg%>%
   ggplot(aes(x=day, y=avg, color=in_bed, group=in_bed))+
@@ -502,7 +502,7 @@ plot6<-merge_slp_avg%>%
     values = c("#009E73", "#D55E00", "#000000"),
     labels=c("After Wakeup", "Asleep", "Awake"))+
   theme_minimal() +
-  theme(plot.title = element_text(hjust = 0.5, face="bold", size = 12),
+  theme(plot.title = element_text(hjust = 0.5, face="bold", size = 14),
         axis.ticks = element_blank(),
         axis.line = element_blank())+
   labs(title = "Average Time in Bed by Days",
@@ -513,6 +513,67 @@ plot6
 
 ```
 Looking at the average hours of sleep i log, again, Sundays seem the only day i get the doctor's recommendation of 8 hours of sleep. My body clock's just 7 hours of sleep on average.
+
+### Sleep Quality
+
+It is important to also analyze one's quality of sleep, particularly the [**sleep stages**](https://blog.fitbit.com/sleep-stages-explained/#:~:text=Sleep%20researchers%20divide%20sleep%20into,what%20each%20of%20those%20mean). As most researchers group the sleep stage into 5 stages, FitBit groups them in mainly three stages: *light*, *deep* and *REM*. 
+
+In short, deep sleep is about the body undergoing  a lot of rebuilding and repairing. Meanwhile, REM involves the brain much more. This is when dreams happen as the brain becomes very active and the body goes inactive. Some researchers say during REM the body actually goes paralyzed.
+
+```{r Quality, include=TRUE, out.height='85%', out.width='85%', fig.align='center', warning=FALSE}
+#create month and day columns
+merge_slp_quality<-merge%>%
+  mutate(day=wday(date, label=TRUE),
+         month=month(date, label = TRUE),
+         year=year(date))%>%
+  select(15, 17:20, 28:29)
+
+#Pivot table
+merge_slp_quality_l<-merge_slp_quality%>%
+  drop_na(levels.summary.deep.minutes)%>%
+  pivot_longer(cols = c(2:6),
+               names_to="type",
+               values_to="value")
+
+
+#Availability vs Fishing rate
+plotdata <- merge_slp_quality_l%>%
+  group_by(day, month)%>%
+  mutate(pct = value/sum(value),
+         lbl = scales::percent(pct))
+
+plot7<-ggplot(plotdata,aes(x = day, y = pct, 
+                        fill = factor(type, 
+                         levels = c("levels.summary.awake.minutes",
+                                    "levels.summary.deep.minutes",
+                                    "levels.summary.light.minutes",
+                                    "levels.summary.rem.minutes",
+                                    "levels.summary.restless.minutes"),
+                         labels = c("awake", "deep", "light",
+                                    "rem", "restless")))) + 
+  geom_bar(stat = "identity", position = "fill") +
+  scale_y_continuous(breaks = seq(0, 1, .2), label = percent) +
+  scale_fill_brewer(palette = "Set2") +
+  theme_minimal()+
+  theme(plot.title = element_text(hjust = 0.5, face="bold", size = 14),
+        axis.ticks = element_blank(),
+        axis.line = element_blank())+
+  labs(y = "Percent", 
+       fill = "Sleep Stage",
+       x = "Day",
+       title = "Sleep Stage by Day")
+ 
+
+plot7
+
+
+```
+
+
+My sleep cycle is more or less in line with research that shows *light sleep* usually makes up 50 to 60 percent of a person's sleep cycle. My deep sleep is around 20-22% of my total sleep time, again inline with 10 to 25 percent observed by sleep specialists. lastly, my REM sleep is also 20-25%. 
+
+In short, my sleep cycles show a healthy distribution indicating quality sleep. Namaste. 
+
 
 ## Heart rate: Healthy?
 ### Beats per minute
@@ -590,9 +651,9 @@ plot9<-merge_hrt_day%>%
    theme(plot.title = element_text(hjust = 0.5, face="bold", size = 12),
         axis.ticks = element_blank(),
         axis.line = element_blank())+
-   labs(title = "Heart rate by Month",
+   labs(title = "Heart rate by day",
        y="beats per minute",
-       x="month")+
+       x="day")+
   annotate("text", x="Tue", y=140, 
            label= "Target HR Zone \n50-85%", size=4.5, face="bold")
 plot9
