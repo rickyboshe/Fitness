@@ -354,6 +354,7 @@ plot4 <- streamgraph(merge_alt_longer, key="activity", value="value", date="date
                     offset="zero", height="590px", width="1000px")%>%
   sg_legend(show=TRUE, label="Activity: ")%>%
   sg_fill_brewer("Pastel1")
+  
 plot4
 ```
 
