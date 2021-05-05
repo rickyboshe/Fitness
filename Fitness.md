@@ -628,3 +628,114 @@ As expected, on average, Sundays logs in the lowest average maximum bpm.
 I rarely do any activity other than catch up on anime and TV shows.
 Thursdays has the highest average maximum bpm. Maybe a culmination of
 weekdays stress?
+
+## Summary
+
+Infographs tend to share levels of information better than any other
+sort of visualization. Depending on what you would like to have on your
+infographs, you might need tome calculations and values beforehand. My
+code has calculations for relative values (monthly growth values and
+percentages) as well as absolute values.
+
+Some people prefer canva to make infographs, but my personal favorite is
+[Venngage](https://infograph.venngage.com/templates/recommended). It has
+both freemium and premium options.
+
+``` r
+#Calculate infograph stats
+## Monthly distance
+monthly_distance<-merge%>%
+  mutate(weekday=wday(date, label=TRUE),
+         month=month(date),
+         year=year(date))
+
+monthly_distance<-monthly_distance%>%
+  mutate(period=as.yearmon(paste(year, month), "%Y %m"))
+monthly_distance$period<-parse_date(monthly_distance$period)
+
+monthly_distance<-monthly_distance%>%
+  group_by(period)%>%
+  summarize(avg_dis=sum(distance))%>%
+  drop_na(avg_dis)%>%
+  mutate(dis_km=avg_dis/1000)
+
+mean(monthly_distance$dis_km)
+
+#compound growth
+growth_rate <- monthly_distance %>%
+  arrange(period) %>%
+  mutate(Diff_month = period - lag(period), 
+         Diff_growth = dis_km - lag(dis_km), 
+         Rate_percent = (Diff_growth / lag(dis_km)) * 100) 
+Average_growth = mean(growth_rate$Rate_percent, na.rm = TRUE)
+
+
+## Monthly active minutes
+monthly_active<-merge%>%
+  mutate(weekday=wday(date, label=TRUE),
+         month=month(date),
+         year=year(date))
+
+monthly_active<-monthly_active%>%
+  mutate(period=as.yearmon(paste(year, month), "%Y %m"))
+monthly_active$period<-parse_date(monthly_active$period)
+
+#Select only light, moderate and ver active minutes, sum them up
+monthly_active$active<- rowSums(monthly_active[, c(7,8,10)], na.rm=TRUE)
+
+#Convert active  minutes to hours and remove months with less than a week recording
+
+monthly_active<-monthly_active%>%
+  group_by(period)%>%
+  summarize(avg_act=sum(active))%>%
+  mutate(avg_act=avg_act/60)%>% 
+  filter(period!="Sep 2020" & period!="Mar 2021") 
+
+mean(monthly_active$avg_act)
+
+#compound growth
+growth_rate <- monthly_active %>%
+  arrange(period) %>%
+  mutate(Diff_month = period - lag(period), 
+         Diff_growth = avg_act - lag(avg_act), 
+         Rate_percent = (Diff_growth / lag(avg_act)) * 100) 
+Average_growth = mean(growth_rate$Rate_percent, na.rm = TRUE)
+
+## Average resting heart rate
+mean(merge$resting_heart_rate, na.rm = TRUE)
+
+## Average sleeping
+daily_sleep<-merge%>%
+  mutate(weekday=wday(date, label=TRUE),
+         month=month(date),
+         year=year(date))
+
+daily_sleep<-daily_sleep%>%
+  group_by(weekday)%>%
+  summarize(avg_slp=mean(minutesAsleep, na.rm=TRUE)/60)
+
+mean(daily_sleep$avg_slp)
+
+
+## REM and Deep Sleep
+monthly_rd<-merge%>%
+  mutate(weekday=wday(date, label=TRUE),
+         month=month(date),
+         year=year(date))
+
+monthly_rd<-monthly_rd%>%
+  mutate(period=as.yearmon(paste(year, month), "%Y %m"))
+monthly_rd$period<-parse_date(monthly_rd$period)
+
+#Select only REM and deep sleep columns and sum them up
+monthly_rd$sleep<- rowSums(monthly_rd[, c(15,18)], na.rm=TRUE)
+
+#Convert Create a column that holds the percentage of sleep that was REM & Deep
+monthly_rd<-monthly_rd%>%
+  group_by(weekday)%>%
+  summarize(rd_slp=sum(sleep),
+            tot_slp=sum(minutesAsleep, na.rm = TRUE))%>%
+  mutate(per_slp=(rd_slp/tot_slp)* 100)
+
+mean(monthly_rd$per_slp)
+```
