@@ -739,3 +739,5 @@ monthly_rd<-monthly_rd%>%
 
 mean(monthly_rd$per_slp)
 ```
+
+![](Fitness_files/figure-gfm/Infograph.PNG)
